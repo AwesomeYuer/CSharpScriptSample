@@ -41,13 +41,13 @@ namespace RoslynCosonle
                 _ = await CSharpScript
                                         .RunAsync
                                             (
-                        @"
+    @"
                                         //Console.WriteLine(aaa);
                                         Console.WriteLine(Inputs.Value<DateTime>(""F3""));
-                                        Console.WriteLine((int)Inputs[""F1""] + 2);
-                                            Outputs[""F2""] = 10;
+                                        Console.WriteLine((int) Inputs[""F1""] + 2);
+                                        Outputs[""F2""] = 10;
 
-                "
+    "
                                                 //, ScriptOptions
                                                 //        .Default
                                                 //        .AddImports("System")
@@ -56,7 +56,7 @@ namespace RoslynCosonle
                                                 , typeof(Globals)
                                             );
 
-                Console.WriteLine(globals.Outputs["F2"]);
+                Console.WriteLine((int) globals.Outputs["F2"] + 1);
             }
             catch (Exception e)
             {
