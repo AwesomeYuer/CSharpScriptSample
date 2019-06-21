@@ -1,14 +1,11 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
-
-
-namespace RoslynCosonle
+﻿namespace Microshaoft
 {
+    using Microsoft.CodeAnalysis.CSharp.Scripting;
     using Microsoft.CodeAnalysis.Scripting;
     using Newtonsoft.Json.Linq;
     using System;
-    using System.Linq;
     using System.Threading.Tasks;
-    class Program
+    public class Program
     {
         static async Task Main(string[] args)
         {
@@ -41,13 +38,13 @@ namespace RoslynCosonle
                 _ = await CSharpScript
                                         .RunAsync
                                             (
-    @"
+@"
                                         //Console.WriteLine(aaa);
                                         Console.WriteLine(Inputs.Value<DateTime>(""F3""));
                                         Console.WriteLine((int) Inputs[""F1""] + 2);
                                         Outputs[""F2""] = 10;
 
-    "
+"
                                                 //, ScriptOptions
                                                 //        .Default
                                                 //        .AddImports("System")
@@ -71,8 +68,8 @@ namespace RoslynCosonle
 
     public class Globals
     {
-        public JToken Context { get; } = new JObject();
-        public JToken Inputs { get; } = new JObject();
-        public JToken Outputs { get; } = new JObject();
+        public JToken Context   { get; }    = new JObject();
+        public JToken Inputs    { get; }    = new JObject();
+        public JToken Outputs   { get; }    = new JObject();
     }
 }
