@@ -4,10 +4,123 @@
     using Microsoft.CodeAnalysis.Scripting;
     using Newtonsoft.Json.Linq;
     using System;
+    using System.Diagnostics;
+    using System.Threading;
     using System.Threading.Tasks;
     public class Program
     {
+
         static async Task Main(string[] args)
+        {
+            var options = ScriptOptions
+                                .Default
+                                .AddReferences
+                                    (
+                                        "System.Linq"
+                                        , "Newtonsoft.Json"
+                                    )
+                                .WithImports
+                                    (
+                                        "System"
+                                        , "System.Linq"
+                                        , "System.Threading"
+                                    )
+                                    ;
+
+            var globals = new Globals();
+            globals.Inputs["F3"] = DateTime.Now;
+            globals.Inputs["F1"] = 100;
+            var aa = globals.Inputs.Value<DateTime>("F3");
+            Console.WriteLine($"in host:{Thread.CurrentThread.ManagedThreadId}");
+
+            var begin = Stopwatch.GetTimestamp();
+            var script = CSharpScript
+                                .Create
+                                    (
+        @"
+                                            //Console.WriteLine(aaa);
+                                            Console.WriteLine(Inputs.Value<DateTime>(""F3""));
+                                            Console.WriteLine((int) Inputs[""F1""] + 2);
+                                            Console.WriteLine((int) Inputs[""F1""] + 2);
+                                            Outputs[""F2""] = 10;
+                                            Console.WriteLine($""in script:{Thread.CurrentThread.ManagedThreadId}"");
+                                            //throw new Exception();
+                                            Console.WriteLine(Inputs.ToString());
+        "
+
+                                            , options
+                                            , typeof(Globals)
+                                    );
+            var end = Stopwatch.GetTimestamp();
+            Console.WriteLine($"create:{new TimeSpan(end - begin).TotalMilliseconds}");
+
+            begin = Stopwatch.GetTimestamp();
+            script.Compile();
+            end = Stopwatch.GetTimestamp();
+            Console.WriteLine($"compile:{new TimeSpan(end - begin).TotalMilliseconds}");
+
+            begin = Stopwatch.GetTimestamp();
+            globals.Inputs["F3"] = DateTime.Now;
+            globals.Inputs["F4"] = Guid.NewGuid();
+            await
+                script
+                    .RunAsync
+                        (
+                            globals
+                            , (x) =>
+                            {
+                                Console.WriteLine(x);
+                                return true;
+                            }
+                        );
+            end = Stopwatch.GetTimestamp();
+            Console.WriteLine($"run:{new TimeSpan(end - begin).TotalMilliseconds}");
+
+
+            begin = Stopwatch.GetTimestamp();
+            globals.Inputs["F3"] = DateTime.Now;
+            globals.Inputs["F4"] = Guid.NewGuid();
+            await
+                script
+                    .RunAsync
+                        (
+                            globals
+                            , (x) =>
+                            {
+                                Console.WriteLine(x);
+                                return true;
+                            }
+                        );
+            end = Stopwatch.GetTimestamp();
+            Console.WriteLine($"run:{new TimeSpan(end - begin).TotalMilliseconds}");
+
+
+            begin = Stopwatch.GetTimestamp();
+            globals.Inputs["F3"] = DateTime.Now;
+            globals.Inputs["F4"] = Guid.NewGuid();
+            await
+                script
+                    .RunAsync
+                        (
+                            globals
+                            , (x) =>
+                            {
+                                Console.WriteLine(x);
+                                return true;
+                            }
+                        );
+            end = Stopwatch.GetTimestamp();
+            Console.WriteLine($"run:{new TimeSpan(end - begin).TotalMilliseconds}");
+
+
+            Console.WriteLine((int) globals.Outputs["F2"] + 1);
+            Console.ReadLine();
+
+
+        }
+
+
+        static async Task Main1(string[] args)
         {
             var options = ScriptOptions
                                 .Default
@@ -43,7 +156,7 @@
                                         Console.WriteLine(Inputs.Value<DateTime>(""F3""));
                                         Console.WriteLine((int) Inputs[""F1""] + 2);
                                         Outputs[""F2""] = 10;
-
+                                        //throw new Exception();
 "
                                                 //, ScriptOptions
                                                 //        .Default
@@ -55,10 +168,13 @@
 
                 Console.WriteLine((int) globals.Outputs["F2"] + 1);
             }
+            catch (CompilationErrorException e)
+            {
+                Console.WriteLine(string.Join(Environment.NewLine, e.Diagnostics, e.Message));
+            }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                
             }
             Console.ReadLine();
 
