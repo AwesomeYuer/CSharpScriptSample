@@ -27,12 +27,6 @@
                                     )
                                     ;
 
-            var globals = new Globals();
-            globals.Inputs["F3"] = DateTime.Now;
-            globals.Inputs["F1"] = 100;
-            var aa = globals.Inputs.Value<DateTime>("F3");
-            Console.WriteLine($"in host:{Thread.CurrentThread.ManagedThreadId}");
-
             var begin = Stopwatch.GetTimestamp();
             var script = CSharpScript
                                 .Create
@@ -40,12 +34,12 @@
         @"
                                             //Console.WriteLine(aaa);
                                             Console.WriteLine(Inputs.Value<DateTime>(""F3""));
-                                            Console.WriteLine((int) Inputs[""F1""] + 2);
-                                            Console.WriteLine((int) Inputs[""F1""] + 2);
-                                            Outputs[""F2""] = 10;
+                                            var f1 = (int) Inputs[""F1""];
+                                            Console.WriteLine((int) Inputs[""F1""] * 100);
+                                            Outputs[""F2""] = f1 * 100;
                                             Console.WriteLine($""in script:{Thread.CurrentThread.ManagedThreadId}"");
                                             //throw new Exception();
-                                            Console.WriteLine(Inputs.ToString());
+                                            Console.WriteLine($""inputs: {Inputs.ToString()}"");
         "
 
                                             , options
@@ -59,66 +53,42 @@
             end = Stopwatch.GetTimestamp();
             Console.WriteLine($"compile:{new TimeSpan(end - begin).TotalMilliseconds}");
 
-            begin = Stopwatch.GetTimestamp();
-            globals.Inputs["F3"] = DateTime.Now;
-            globals.Inputs["F4"] = Guid.NewGuid();
-            await
-                script
-                    .RunAsync
-                        (
-                            globals
-                            , (x) =>
-                            {
-                                Console.WriteLine(x);
-                                return true;
-                            }
-                        );
-            end = Stopwatch.GetTimestamp();
-            Console.WriteLine($"run:{new TimeSpan(end - begin).TotalMilliseconds}");
 
-
-            begin = Stopwatch.GetTimestamp();
-            globals.Inputs["F3"] = DateTime.Now;
-            globals.Inputs["F4"] = Guid.NewGuid();
-            await
-                script
-                    .RunAsync
-                        (
-                            globals
-                            , (x) =>
-                            {
-                                Console.WriteLine(x);
-                                return true;
-                            }
-                        );
-            end = Stopwatch.GetTimestamp();
-            Console.WriteLine($"run:{new TimeSpan(end - begin).TotalMilliseconds}");
-
-
-            begin = Stopwatch.GetTimestamp();
-            globals.Inputs["F3"] = DateTime.Now;
-            globals.Inputs["F4"] = Guid.NewGuid();
-            await
-                script
-                    .RunAsync
-                        (
-                            globals
-                            , (x) =>
-                            {
-                                Console.WriteLine(x);
-                                return true;
-                            }
-                        );
-            end = Stopwatch.GetTimestamp();
-            Console.WriteLine($"run:{new TimeSpan(end - begin).TotalMilliseconds}");
-
-
-            Console.WriteLine((int) globals.Outputs["F2"] + 1);
+            Parallel
+                .For
+                    (
+                        1
+                        , 100
+                        , new ParallelOptions
+                        {
+                             MaxDegreeOfParallelism = 8
+                        }
+                        , async (i) =>
+                        {
+                            var beginTime = Stopwatch.GetTimestamp();
+                            var globals = new Globals();
+                            globals.Inputs["F1"] = i;
+                            Console.WriteLine($"in host:{Thread.CurrentThread.ManagedThreadId}");
+                            globals.Inputs["F3"] = DateTime.Now;
+                            globals.Inputs["F4"] = Guid.NewGuid();
+                            _ = await
+                                    script
+                                        .RunAsync
+                                            (
+                                                globals
+                                                , (x) =>
+                                                {
+                                                    Console.WriteLine(x);
+                                                    return true;
+                                                }
+                                            );
+                            var endTime = Stopwatch.GetTimestamp();
+                            Console.WriteLine($"run:{new TimeSpan(endTime - beginTime).TotalMilliseconds}");
+                            Console.WriteLine($"outputs F2:{(int) globals.Outputs["F2"]}");
+                        }
+                    );
             Console.ReadLine();
-
-
         }
-
 
         static async Task Main1(string[] args)
         {
