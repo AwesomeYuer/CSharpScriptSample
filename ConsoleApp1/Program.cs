@@ -2,6 +2,7 @@
 {
     using Microsoft.CodeAnalysis.CSharp.Scripting;
     using Microsoft.CodeAnalysis.Scripting;
+    using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
     using System.Diagnostics;
@@ -152,10 +153,33 @@
         }
     }
 
-    public class Globals
+    public class Globals //: JToken
     {
-        public JToken Context   { get; }    = new JObject();
-        public JToken Inputs    { get; }    = new JObject();
-        public JToken Outputs   { get; }    = new JObject();
+        public JToken Context { get; } = new JObject();
+        public JToken Inputs { get; } = new JObject();
+        public JToken Outputs { get; } = new JObject();
+        //public override JTokenType Type => throw new NotImplementedException();
+
+        //public override bool HasValues => throw new NotImplementedException();
+
+        //public override void WriteTo(JsonWriter writer, params JsonConverter[] converters)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //internal override JToken CloneToken()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //internal override bool DeepEquals(JToken node)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //internal override int GetDeepHashCode()
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 }
